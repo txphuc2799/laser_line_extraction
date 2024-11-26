@@ -15,12 +15,16 @@ LineExtractionROS::LineExtractionROS(ros::NodeHandle& nh, ros::NodeHandle& nh_lo
   data_cached_(false)
 {
   loadParameters();
+  enable_detector_ = false;
   line_publisher_ = nh_.advertise<laser_line_extraction::LineSegmentList>("line_segments", 1);
   scan_subscriber_ = nh_.subscribe(scan_topic_, 1, &LineExtractionROS::laserScanCallback, this);
   if (pub_markers_)
   {
     marker_publisher_ = nh_.advertise<visualization_msgs::Marker>("line_markers", 1);
   }
+
+  enable_detector_service_ = nh_local_.advertiseService("enable_detector",
+                             &LineExtractionROS::enableDetectorCallback, this);
 }
 
 LineExtractionROS::~LineExtractionROS()
@@ -32,23 +36,25 @@ LineExtractionROS::~LineExtractionROS()
 ///////////////////////////////////////////////////////////////////////////////
 void LineExtractionROS::run()
 {
-  // Extract the lines
-  std::vector<Line> lines;
-  line_extraction_.extractLines(lines);
+  if (enable_detector_) {
+    // Extract the lines
+    std::vector<Line> lines;
+    line_extraction_.extractLines(lines);
 
-  // Populate message
-  laser_line_extraction::LineSegmentList msg;
-  populateLineSegListMsg(lines, msg);
-  
-  // Publish the lines
-  line_publisher_.publish(msg);
+    // Populate message
+    laser_line_extraction::LineSegmentList msg;
+    populateLineSegListMsg(lines, msg);
+    
+    // Publish the lines
+    line_publisher_.publish(msg);
 
-  // Also publish markers if parameter publish_markers is set to true
-  if (pub_markers_)
-  {
-    visualization_msgs::Marker marker_msg;
-    populateMarkerMsg(lines, marker_msg);
-    marker_publisher_.publish(marker_msg);
+    // Also publish markers if parameter publish_markers is set to true
+    if (pub_markers_)
+    {
+      visualization_msgs::Marker marker_msg;
+      populateMarkerMsg(lines, marker_msg);
+      marker_publisher_.publish(marker_msg);
+    }
   }
 }
 
@@ -214,6 +220,18 @@ void LineExtractionROS::laserScanCallback(const sensor_msgs::LaserScan::ConstPtr
 
   std::vector<double> scan_ranges_doubles(scan_msg->ranges.begin(), scan_msg->ranges.end());
   line_extraction_.setRangeData(scan_ranges_doubles);
+}
+
+bool LineExtractionROS::enableDetectorCallback(std_srvs::SetBool::Request& req,
+                                               std_srvs::SetBool::Response& res) {
+  enable_detector_ = req.data;
+  res.success = true;
+  if (enable_detector_) {
+    res.message = "Enable detector success!";
+  } else {
+    res.message = "Disable detector success!";
+  }
+  return true;
 }
 
 } // namespace line_extraction

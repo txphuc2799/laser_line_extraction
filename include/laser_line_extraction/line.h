@@ -32,7 +32,7 @@ public:
   double       length() const;
   unsigned int numPoints() const;
   void         projectEndpoints();
-
+  
 private:
   std::vector<unsigned int> indices_;
   // Data structures

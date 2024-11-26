@@ -11,10 +11,33 @@ namespace line_extraction
 ///////////////////////////////////////////////////////////////////////////////
 LineExtraction::LineExtraction()
 {
+  dynamic_srv_ = new ParamterConfigServer(ros::NodeHandle("~"));
+  CallbackType cb = boost::bind(&LineExtraction::reconfigureCB,
+                                this, _1, _2);
+  dynamic_srv_->setCallback(cb);
 }
 
 LineExtraction::~LineExtraction()
 {
+  if (dynamic_srv_) {
+    delete dynamic_srv_;
+    dynamic_srv_ = nullptr;
+  }
+}
+
+void LineExtraction::reconfigureCB(Config& config, uint32_t level)
+{
+  params_.max_line_gap = config.max_line_gap;
+  params_.min_line_length = config.min_line_length;
+  params_.min_range = config.min_range;
+  params_.max_range = config.max_range;
+  params_.min_split_dist = config.min_split_dist;
+  params_.outlier_dist = config.outlier_dist;
+  params_.min_line_points = config.min_line_points;
+  params_.bearing_var = config.bearing_std_dev;
+  params_.range_var = config.range_std_dev;
+  params_.least_sq_angle_thresh = config.least_sq_angle_thresh;
+  params_.least_sq_radius_thresh = config.least_sq_radius_thresh;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -25,6 +48,7 @@ void LineExtraction::extractLines(std::vector<Line>& lines)
   // Resets
   filtered_indices_ = c_data_.indices;
   lines_.clear();
+
 
   // Filter indices
   filterCloseAndFarPoints();
@@ -51,7 +75,6 @@ void LineExtraction::extractLines(std::vector<Line>& lines)
   {
     mergeLines();
   }
-
   lines = lines_;
 }
 
@@ -165,6 +188,7 @@ void LineExtraction::filterCloseAndFarPoints()
        cit != filtered_indices_.end(); ++cit)
   {
     const double& range = r_data_.ranges[*cit];
+
     if (range >= params_.min_range && range <= params_.max_range)
     {
       output.push_back(*cit);
@@ -223,12 +247,12 @@ void LineExtraction::filterOutlierPoints()
 
     output.push_back(p_i);
   }
-
   filtered_indices_ = output;
+  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Filtering and merging lines
+// Filtering and merging lines ////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 void LineExtraction::filterLines()
 {

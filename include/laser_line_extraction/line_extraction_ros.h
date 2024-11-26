@@ -11,6 +11,7 @@
 #include "laser_line_extraction/LineSegmentList.h"
 #include "laser_line_extraction/line_extraction.h"
 #include "laser_line_extraction/line.h"
+#include <std_srvs/SetBool.h>
 
 namespace line_extraction
 {
@@ -32,6 +33,9 @@ private:
   ros::Subscriber scan_subscriber_;
   ros::Publisher line_publisher_;
   ros::Publisher marker_publisher_;
+
+  ros::ServiceServer enable_detector_service_;
+
   // Parameters
   std::string frame_id_;
   std::string scan_topic_;
@@ -39,12 +43,15 @@ private:
   // Line extraction
   LineExtraction line_extraction_;
   bool data_cached_; // true after first scan used to cache data
+  // Enable detector:
+  bool enable_detector_;
   // Members
   void loadParameters();
   void populateLineSegListMsg(const std::vector<Line>&, laser_line_extraction::LineSegmentList&);
   void populateMarkerMsg(const std::vector<Line>&, visualization_msgs::Marker&);
   void cacheData(const sensor_msgs::LaserScan::ConstPtr&);
   void laserScanCallback(const sensor_msgs::LaserScan::ConstPtr&);
+  bool enableDetectorCallback(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res);
 };
 
 } // namespace line_extraction

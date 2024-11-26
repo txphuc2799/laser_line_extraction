@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   geometry_msgs
   message_generation
+  dynamic_reconfigure
   roscpp
   rospy
   sensor_msgs
@@ -22,6 +23,11 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   sensor_msgs
+)
+
+## Generate dynamic reconfigure parameters in the 'cfg' folder
+generate_dynamic_reconfigure_options(
+  cfg/Parameter.cfg
 )
 
 catkin_package(

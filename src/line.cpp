@@ -106,7 +106,8 @@ void Line::endpointFit()
   start_[0] = r_data_.xs[indices_[0]]; 
   start_[1] = r_data_.ys[indices_[0]]; 
   end_[0] = r_data_.xs[indices_.back()]; 
-  end_[1] = r_data_.ys[indices_.back()]; 
+  end_[1] = r_data_.ys[indices_.back()];
+
   angleFromEndpoints();
   radiusFromEndpoints();
 }
@@ -218,6 +219,7 @@ void Line::calcPointCovariances()
 {
   point_covs_.clear();
   double r, phi, var_r, var_phi;
+
   for (std::vector<unsigned int>::const_iterator cit = indices_.begin(); cit != indices_.end(); ++cit)
   {
     r = r_data_.ranges[*cit]; // range
@@ -297,7 +299,6 @@ void Line::radiusFromLeastSq()
     phi = c_data_.bearings[*cit]; // bearing
     radius_ += r * cos(angle_ - phi) / point_scalar_vars_[cit - indices_.begin()]; // cit to index
   }
-  
   radius_ *= p_rr_;
 }
 

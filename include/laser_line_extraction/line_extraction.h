@@ -7,12 +7,18 @@
 #include <Eigen/Dense>
 #include "laser_line_extraction/utilities.h"
 #include "laser_line_extraction/line.h"
+#include <dynamic_reconfigure/server.h>
+#include <laser_line_extraction/ParameterConfig.h>
 
 namespace line_extraction
 {
 
 class LineExtraction
 {
+
+typedef laser_line_extraction::ParameterConfig Config;
+typedef dynamic_reconfigure::Server<Config> ParamterConfigServer;
+typedef dynamic_reconfigure::Server<Config>::CallbackType CallbackType;
 
 public:
   // Constructor / destructor
@@ -55,6 +61,12 @@ private:
   void   filterLines();
   void   mergeLines();
   void   split(const std::vector<unsigned int>&);
+  void reconfigureCB(Config& config, uint32_t level);
+
+private:
+  double max_line_gap_, min_line_length_, min_range_, max_range_, min_split_dist_, outlier_dist_;
+  unsigned int min_line_points;
+  ParamterConfigServer* dynamic_srv_;
 };
 
 } // namespace line_extraction
