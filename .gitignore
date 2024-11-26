@@ -7,3 +7,6 @@ build/*
 data/*
 msg_gen/*
 src/__pycache__/*
+
+.vscode/c_cpp_properties.json
+.vscode/settings.json

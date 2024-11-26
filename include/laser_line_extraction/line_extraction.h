@@ -4,9 +4,9 @@
 #include <cmath>
 #include <vector>
 #include <boost/array.hpp>
-#include <Eigen/Dense>
-#include "laser_line_extraction/utilities.h"
-#include "laser_line_extraction/line.h"
+#include <eigen3/Eigen/Dense>
+#include "utilities.h"
+#include "line.h"
 
 namespace line_extraction
 {
@@ -33,7 +33,6 @@ public:
   void setMinLineLength(double);
   void setMinLinePoints(unsigned int);
   void setMinRange(double);
-  void setMaxRange(double);
   void setMinSplitDist(double);
   void setOutlierDist(double);
 
@@ -50,7 +49,7 @@ private:
   double chiSquared(const Eigen::Vector2d&, const Eigen::Matrix2d&,
                     const Eigen::Matrix2d&);
   double distBetweenPoints(unsigned int index_1, unsigned int index_2);
-  void   filterCloseAndFarPoints();
+  void   filterClosePoints();
   void   filterOutlierPoints();
   void   filterLines();
   void   mergeLines();

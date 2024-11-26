@@ -1,32 +1,23 @@
-#include "laser_line_extraction/line_extraction_ros.h"
-#include <ros/console.h>
+#include "laser_line_extraction/line_extraction_node.h"
 
-int main(int argc, char **argv)
+int main(int argc, char* argv[])
 {
+    std::shared_ptr<line_extraction::LineExtractionROS> line_extraction_node;
 
-  if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug)) 
-  {
-     ros::console::notifyLoggerLevelsChanged();
-  }
+    rclcpp::init(argc, argv);
 
-  ROS_DEBUG("Starting line_extraction_node.");
+    line_extraction_node = std::make_shared<line_extraction::LineExtractionROS>();
 
-  ros::init(argc, argv, "line_extraction_node");
-  ros::NodeHandle nh;
-  ros::NodeHandle nh_local("~");
-  line_extraction::LineExtractionROS line_extractor(nh, nh_local);
+    RCLCPP_INFO(line_extraction_node->get_logger(), "[%s] line_extraction_node has been started", __func__);
 
-  double frequency;
-  nh_local.param<double>("frequency", frequency, 25);
-  ROS_DEBUG("Frequency set to %0.1f Hz", frequency);
-  ros::Rate rate(frequency);
+    rclcpp::WallRate rate(50.0);
 
-  while (ros::ok())
-  {
-    line_extractor.run();
-    ros::spinOnce();
-    rate.sleep();
-  }
-  return 0;
+    while (rclcpp::ok()) 
+    {
+        line_extraction_node->run();
+        rclcpp::spin_some(line_extraction_node);
+        rate.sleep();
+    }
+    
+    return 0;
 }
-

@@ -1,6 +1,6 @@
 #include "laser_line_extraction/line_extraction.h"
 #include <algorithm>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <iostream>
 
 namespace line_extraction
@@ -22,15 +22,18 @@ LineExtraction::~LineExtraction()
 ///////////////////////////////////////////////////////////////////////////////
 void LineExtraction::extractLines(std::vector<Line>& lines) 
 {
+  
   // Resets
+  
   filtered_indices_ = c_data_.indices;
   lines_.clear();
-
+  
   // Filter indices
-  filterCloseAndFarPoints();
+  filterClosePoints();
   filterOutlierPoints();
 
   // Return no lines if not enough points left
+  // std::cout << params_.min_line_points << std::endl;
   if (filtered_indices_.size() <= std::max(params_.min_line_points, static_cast<unsigned int>(3)))
   {
     return;
@@ -53,6 +56,9 @@ void LineExtraction::extractLines(std::vector<Line>& lines)
   }
 
   lines = lines_;
+  // std::cout << lines.size() << std::endl;
+  
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -125,11 +131,6 @@ void LineExtraction::setMinRange(double value)
   params_.min_range = value;
 }
 
-void LineExtraction::setMaxRange(double value)
-{
-  params_.max_range = value;
-}
-
 void LineExtraction::setMinSplitDist(double value)
 {
   params_.min_split_dist = value;
@@ -158,14 +159,13 @@ double LineExtraction::distBetweenPoints(unsigned int index_1, unsigned int inde
 ///////////////////////////////////////////////////////////////////////////////
 // Filtering points
 ///////////////////////////////////////////////////////////////////////////////
-void LineExtraction::filterCloseAndFarPoints()
+void LineExtraction::filterClosePoints()
 {
   std::vector<unsigned int> output;
   for (std::vector<unsigned int>::const_iterator cit = filtered_indices_.begin(); 
        cit != filtered_indices_.end(); ++cit)
   {
-    const double& range = r_data_.ranges[*cit];
-    if (range >= params_.min_range && range <= params_.max_range)
+    if (r_data_.ranges[*cit] >= params_.min_range)
     {
       output.push_back(*cit);
     }
